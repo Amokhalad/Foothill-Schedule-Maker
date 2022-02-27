@@ -6,7 +6,7 @@ but written in python and with a file, `coursefetch.py` so that you don't have t
 
 coursefetch.py is used from: https://github.com/LordOfDeadbush/autoschedule/blob/main/coursefetch.py
 
-This program is still a work in progress and will soon be a website. 
+This program is still a work in progress so there might be some bugs still
 ## How To use:
 - clone repository
 - before you run main.py
