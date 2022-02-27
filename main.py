@@ -1,97 +1,6 @@
 from coursefetch import *
-import copy
+from class_professor_obj import *
 
-
-def convert_time(time):  # helper function for convert_time in Professor class
-    hour = int(time[0:2])
-    minute = int(time[3:6])
-    period = time[6:8]
-    if period == "PM" and hour >= 1 and hour != 12:
-        hour += 12
-    elif hour == 12 and period == "AM":
-        hour = 0
-
-    return hour + (minute * (1.0 / 60.0))
-
-
-class Professor:
-    def __init__(self, name, days=None, times=None, rating=None, class_teaching=None):
-        self._name = name
-        self._days = days
-        self._times = times
-        self._decimal_times = copy.deepcopy(self._times)
-        self._rating = rating
-        self._class_teaching = class_teaching
-        self.time_to_decimal()
-        self.change_thursdays()
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def times(self):
-        return self._times
-
-    @property
-    def dec_times(self):
-        return self._decimal_times
-
-    @property
-    def days(self):
-        return self._days
-
-    @property
-    def rating(self):
-        return self._rating
-
-    @property
-    def class_teaching(self):
-        return self._class_teaching
-
-    def time_to_decimal(self):
-        for time in self._decimal_times:
-            if time[0] == 'TBA' or time[1] == 'TBA':
-                self._decimal_times.remove(time)
-                continue
-            time[0] = convert_time(time[0])  # start time
-            time[1] = convert_time(time[1])  # end time
-
-    def change_thursdays(self):
-        # this function changes all Th to R
-        for idx, day in enumerate(self._days):
-            self._days[idx] = day.replace('Th', 'R')
-
-
-class Class:
-    def __init__(self, classes_data, class_name):
-        self._data = classes_data
-        self._class_name = class_name
-        self.professors = []
-        self.fill_professors_data()
-
-    @property
-    def cls_name(self):
-        return self._class_name
-
-    @property
-    def prof_list(self):
-        return self.professors
-
-    def fill_professors_data(self):
-
-        for prof in self._data:
-            name = prof['times'][0]['instructor'][0]  # prof name
-            days = []
-            times = []
-            for lecture in prof['times']:
-                days.append(lecture['days'])  # prof days
-                start_time = lecture['start_time']
-                end_time = lecture['end_time']
-                times.append([start_time, end_time])  # prof times
-                rating = prof['rating']
-                class_teaching = prof['dept'] + " " + prof['course']
-                self.professors.append(Professor(name, days, times, rating, class_teaching))
 
 
 def get_user_classes():
@@ -99,6 +8,7 @@ def get_user_classes():
     while True:
         c_name = input("Enter Course Name or x to stop: ")
         if c_name == "x":
+            print('Loading...')
             break
         else:
             class_names.append(c_name)
@@ -124,7 +34,10 @@ def all_possible_schedules(classes, num_of_classes):
                         time_conflicts = True
                         break
                 if not time_conflicts:
-                    not_duplicate = not sub_schedule or prof.dec_times[0][0] >= sub_schedule[-1].dec_times[0][0]
+                    try:
+                        not_duplicate = not sub_schedule or prof.dec_times[0][0] >= sub_schedule[-1].dec_times[0][0]
+                    except IndexError:  # times has 'TBA' in there.
+                        not_duplicate = not sub_schedule
                     not_same_class = not sub_schedule or prof.class_teaching != sub_schedule[-1].class_teaching
                     if not_duplicate and not_same_class:
                         schedules.append(sub_schedule + [prof])
@@ -162,19 +75,18 @@ def prints(classes):
 
 
 def print_schedules(schedules):
-    i = 0
-    for sched in schedules:
-        print(f'Schedule {i + 1}: ')
-        print_sched(sched)
-        i += 1
-
-
-def print_sched(schedule):
-    for prof in schedule:
-        print(f'\t {prof.class_teaching}: {prof.name} -> {prof.times} -> {prof.days}')
+    sched_count = 0
+    for schedule in schedules:
+        print(f'Schedule {sched_count + 1}: ')
+        for prof in schedule:
+            print(f'\t {prof.class_teaching}: ')
+            for i in range(len(prof.times)):
+                print(f'\t\t{prof.name} -> {prof.times[i][0]} - {prof.times[i][1]} -> {prof.days[i]}')
+        sched_count += 1
 
 
 def max_RMP_schedule(all_schedules):
+
     max_rmp = 0
     # finding the max_rmp
     schedules_with_max_rmp = []
@@ -201,31 +113,49 @@ def score(all_schedules, scoring_user_decision):
     ret_schedules = []
     for choice in scoring_user_decision:
         if choice == 1:
-            ret_schedules = max_RMP_schedule(all_schedules)
-
+            ret_schedules.append(max_RMP_schedule(all_schedules))
+        if choice == 2:
+            ret_schedules.append(all_schedules)
     return ret_schedules
+
+
+def print_result(schedules_list, scoring_user_decision):
+    i = 0
+    for choice in scoring_user_decision:
+        if choice == 1:
+            print('Largest Rating Schedules')
+            print_schedules(schedules_list[i])
+        if choice == 2:
+            print('All Possible Schedules')
+            print_schedules(schedules_list[i])
+        i += 1
 
 
 def main():
     print('WELCOME TO OPTIMAL SCHEDULE PROGRAM:\n')
-    print('Pick how you would like you like to score your schedule? ')
+    classes = get_user_classes()
+
+    print('\nPick how you would like you like to score your schedule? ')
     scoring_user_decision = []
     while True:
-        print('1: largest RMP rating')
-        print('2: no nighest classes (coming soon)')
-        print('3: avoid professor (coming soon)')
+        print('1: largest rating schedules')
+        print('2: show all possible schedules')
+        print('3: no nighest classes (coming soon)')
+        print('4: avoid professor (coming soon)')
         print('0: Exit \n')
-
-        user_choice = int(input("Enter choice: "))
-
+        try:
+            user_choice = int(input("Enter choice: "))
+        except ValueError:
+            print('Enter Numbers Only')
+            continue
         if user_choice == 0:
             break
+
         else:
             scoring_user_decision.append(user_choice)
 
-    classes = get_user_classes()
     all_schedules = all_possible_schedules(classes, len(classes))
-    print_schedules(score(all_schedules, scoring_user_decision))
+    print_result(score(all_schedules, scoring_user_decision), scoring_user_decision)
 
 
 if __name__ == "__main__":

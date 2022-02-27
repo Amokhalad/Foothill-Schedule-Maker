@@ -1,3 +1,6 @@
+import copy
+
+
 def convert_time(time):  # helper function for convert_time in Professor class
     hour = int(time[0:2])
     minute = int(time[3:6])
