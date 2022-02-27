@@ -33,13 +33,15 @@ def all_possible_schedules(classes, num_of_classes):
                     if has_time_conflict(sub_prof, prof):
                         time_conflicts = True
                         break
+                    if prof.class_teaching == sub_prof.class_teaching:
+                        time_conflicts = True
+                        break
                 if not time_conflicts:
                     try:
                         not_duplicate = not sub_schedule or prof.dec_times[0][0] >= sub_schedule[-1].dec_times[0][0]
                     except IndexError:  # times has 'TBA' in there.
                         not_duplicate = not sub_schedule
-                    not_same_class = not sub_schedule or prof.class_teaching != sub_schedule[-1].class_teaching
-                    if not_duplicate and not_same_class:
+                    if not_duplicate:
                         schedules.append(sub_schedule + [prof])
     return schedules
 
