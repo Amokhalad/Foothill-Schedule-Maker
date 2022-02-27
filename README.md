@@ -8,7 +8,10 @@ coursefetch.py is used from: https://github.com/LordOfDeadbush/autoschedule/blob
 
 This program is still a work in progress and will soon be a website. 
 ## How To use:
-- input it in terminal: `python -m pip install requests` to install requests
+- clone repository
+- before you run main.py
+- input in terminal: `python -m pip install requests` to install requests
+- run main.py
 - when it asks you to enter a course name: 
         - enter the dept followed by the course number, like: Math 1A, or math 1D, or phYs 4C, Engl 1A, etc.... (caps don't matter)
 
