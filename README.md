@@ -10,6 +10,7 @@ but written in python and with a file, `coursefetch.py` so that you don't have t
 coursefetch.py is used from: https://github.com/LordOfDeadbush/autoschedule/blob/main/coursefetch.py
 
 This program is still a work in progress and will soon be a website. 
+I will try to make this program work for All schools, not just foothill
 
 ## TODO:
 - Add error checking
