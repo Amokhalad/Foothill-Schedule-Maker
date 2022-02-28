@@ -2,6 +2,17 @@ from coursefetch import *
 from class_professor_obj import *
 
 
+# def delete_duplicate_schedule(schedules):
+#     no_dup_schedules = []
+#
+#     for sched in schedules:
+#         if sched not in no_dup_schedules:
+#             print(sched)
+#             print(no_dup_schedules[0])
+#             no_dup_schedules.append(sched)
+#
+#     return no_dup_schedules
+
 
 def get_user_classes():
     class_names = []  # list of strings
@@ -33,21 +44,19 @@ def all_possible_schedules(classes, num_of_classes):
                     if has_time_conflict(sub_prof, prof):
                         time_conflicts = True
                         break
-                    if prof.class_teaching == sub_prof.class_teaching:
-                        time_conflicts = True
-                        break
                 if not time_conflicts:
-                    try:
-                        not_duplicate = not sub_schedule or prof.dec_times[0][0] >= sub_schedule[-1].dec_times[0][0]
-                    except IndexError:  # times has 'TBA' in there.
-                        not_duplicate = not sub_schedule
+                    not_duplicate = not sub_schedule or prof.crn > sub_schedule[-1].crn # sort by CRNS 
+
                     if not_duplicate:
                         schedules.append(sub_schedule + [prof])
+
     return schedules
 
 
 def has_time_conflict(profA, profB):
     same_days = False
+    if profA.class_teaching == profB.class_teaching:  # don't compare same class professors
+        return True
 
     for days_a in profA.days:
         for days_b in profB.days:
@@ -59,7 +68,7 @@ def has_time_conflict(profA, profB):
     if same_days:
         for time_a in profA.dec_times:
             for time_b in profB.dec_times:
-                if time_a == 'TBA' or time_b == 'TBA':
+                if time_a[0] == 'TBA' or time_b[0] == 'TBA':
                     continue
                 if (time_a[0] < time_b[1]) and (time_a[1] > time_b[0]):
                     return True
@@ -88,7 +97,6 @@ def print_schedules(schedules):
 
 
 def max_RMP_schedule(all_schedules):
-
     max_rmp = 0
     # finding the max_rmp
     schedules_with_max_rmp = []
@@ -157,6 +165,7 @@ def main():
             scoring_user_decision.append(user_choice)
 
     all_schedules = all_possible_schedules(classes, len(classes))
+
     print_result(score(all_schedules, scoring_user_decision), scoring_user_decision)
 
 

@@ -14,15 +14,27 @@ def convert_time(time):  # helper function for convert_time in Professor class
 
 
 class Professor:
-    def __init__(self, name, days=None, times=None, rating=None, class_teaching=None):
+    def __init__(self, name, days=None, times=None, rating=None, class_teaching=None, crn=None):
         self._name = name
         self._days = days
         self._times = times
         self._decimal_times = copy.deepcopy(self._times)
         self._rating = rating
         self._class_teaching = class_teaching
+        self._crn = crn
         self.time_to_decimal()
         self.change_thursdays()
+
+    def __eq__(self, other):
+        return (
+                self.class_teaching == other.class_teaching
+                and self.name == other.name
+                and self.dec_times == other.dec_times
+                and self.days == other.days
+        )
+
+    def __repr__(self):
+        return f"{self.name}"
 
     @property
     def name(self):
@@ -48,10 +60,13 @@ class Professor:
     def class_teaching(self):
         return self._class_teaching
 
+    @property
+    def crn(self):
+        return self._crn
+
     def time_to_decimal(self):
         for time in self._decimal_times:
             if time[0] == 'TBA' or time[1] == 'TBA':
-                self._decimal_times.remove(time)
                 continue
             time[0] = convert_time(time[0])  # start time
             time[1] = convert_time(time[1])  # end time
@@ -90,4 +105,5 @@ class Class:
                 times.append([start_time, end_time])  # prof times
                 rating = prof['rating']
                 class_teaching = prof['dept'] + " " + prof['course']
-                self.professors.append(Professor(name, days, times, rating, class_teaching))
+                crn = int(prof['CRN'])
+                self.professors.append(Professor(name, days, times, rating, class_teaching, crn))
